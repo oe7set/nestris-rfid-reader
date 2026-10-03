@@ -108,6 +108,7 @@ The answer to every command that is not answered by `hello`.
 | `busy` | another write is pending |
 | `timeout` | no (matching) card within `timeout_ms` |
 | `wrong_card` | a card is present but its UID is not the requested `uid` |
+| `no_card` | `show` without a card on the reader |
 | `unsupported_card` | not a MIFARE Classic card |
 | `auth` | authentication with the default key failed |
 | `write` | the write command failed (card moved?) |
@@ -170,7 +171,7 @@ player's best score. Cleared when the card is removed.
 | Field | |
 |---|---|
 | `lines` | 1–4 strings (128×32 shows the first 2), each ≤ 21 characters; longer lines are cut |
-| `uid` | optional: only apply if this card is (still) present, else `result` `ok:false, error:"wrong_card"` |
+| `uid` | optional: only apply if this card is (still) present, else `result` `ok:false, error:"wrong_card"`; without any card: `no_card` |
 | `ttl_ms` | optional: revert to the default card screen after this time |
 
 ### `cancel`

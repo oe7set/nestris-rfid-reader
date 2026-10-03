@@ -1,0 +1,31 @@
+# Unit tests of src/core (native) and the firmware build on every push.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # git describe for FW_VERSION
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio/.cache
+            ~/.platformio/packages
+            ~/.platformio/platforms
+          key: pio-${{ hashFiles('platformio.ini') }}
+      - run: pip install platformio
+      - name: Unit tests (native)
+        run: pio test -e native
+      - name: Firmware build
+        run: pio run -e esp32dev -t factory

@@ -17,15 +17,25 @@ state machine, display, module layout, phases),
 [docs/PROTOCOL.md](docs/PROTOCOL.md) (the host contract),
 [docs/CARD_FORMAT.md](docs/CARD_FORMAT.md).
 
-## Commands (from phase R1)
+## Commands
 
 ```powershell
-pio test -e native                 # unit tests of src/core (no hardware)
+pio test -e native                 # unit tests of src/core (no hardware; needs gcc)
 pio run -e esp32dev                # build
-pio run -e esp32dev -t upload      # flash (reader on USB)
+pio run -e esp32dev -t upload      # flash the app (reader on USB, keeps settings)
+pio run -e esp32dev -t factory     # factory image for new readers (FLASHING.md)
 pio device monitor -b 115200
-python tools/reader_cli.py COM5    # bench tool: events, commands, card writes
+uv run tools/reader_cli.py COM5    # bench tool: events, commands, card writes
+python tools/make_release.py 1.0.0 # release assets into dist/ (CI does this on tags)
 ```
+
+`pio` is `~/.platformio/penv/Scripts/pio.exe` if it is not on PATH. Windows
+without gcc: put the zig shims first on PATH for the native tests:
+`$env:PATH = "$PWD\tools\native-zig;$env:PATH"; pio test -e native`
+(zig comes from PyPI via `uvx`, nothing to install).
+
+Status: firmware and tests complete for R1/R2, but **not yet run on a real
+reader**; see the phase table in docs/ARCHITECTURE.md.
 
 ## Conventions
 
@@ -37,6 +47,11 @@ python tools/reader_cli.py COM5    # bench tool: events, commands, card writes
   `proto` for incompatible changes.
 - `src/core/` is pure C++ without Arduino or hardware headers and is
   unit-tested with `pio test -e native`; hardware access only in `src/hw/`.
+- Behaviour lives in `src/core/app.cpp` behind the interfaces `IRfid`,
+  `IDisplay`, `ILink`, `ISystem`; `test/test_app` drives it with fakes. New
+  behaviour gets a test there first.
+- Updates flash the **app image at 0x10000**; the factory image (0x0) erases
+  the NVS settings and is for new readers only.
 - The main loop never blocks (no `delay` beyond the 50 ms RFID cycle);
   long operations are state machines.
 - Serial output is JSON lines only, built in `src/core/protocol`.

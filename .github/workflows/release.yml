@@ -1,0 +1,38 @@
+# Release: push a tag "v<semver>", e.g.  git tag v1.0.0 && git push origin v1.0.0
+# Publishes the factory image (new readers), the app image (updates), the
+# manifest read by the updaters of nestris-terminal and nestris-station, and
+# SHA256SUMS.txt. Tags with "-" (v1.1.0-rc1) become pre-releases.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install platformio
+      - name: Unit tests (native)
+        run: pio test -e native
+      - name: Build
+        run: pio run -e esp32dev -t factory
+      - name: Check the firmware reports the tag
+        run: strings .pio/build/esp32dev/firmware.bin | grep -qxF "${GITHUB_REF_NAME#v}"
+      - name: Collect assets
+        run: python tools/make_release.py "${GITHUB_REF_NAME}"
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: nestris-rfid-reader ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: dist/*

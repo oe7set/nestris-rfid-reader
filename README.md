@@ -11,10 +11,12 @@ verify).
 - Card layout: [docs/CARD_FORMAT.md](docs/CARD_FORMAT.md)
 - Design, wiring and roadmap: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-> Status: planned (phase R0). The firmware in use until then is the v1 sketch
-> in `../RFID_ESP/ESP32_CARD_READER`.
+> Status: firmware implemented and unit-tested (phases R1/R2), **not yet
+> tested on a real reader**. Until then the v1 sketch in
+> `../RFID_ESP/ESP32_CARD_READER` stays in use; note that v2 is not compatible
+> with the current terminal/station drivers (phase R3).
 
-## Build and flash (from phase R1)
+## Build and flash
 
 ```powershell
 pip install platformio            # or: uv tool install platformio
@@ -23,5 +25,6 @@ pio run -e esp32dev -t upload     # build and flash the reader on USB
 pio device monitor -b 115200      # watch the JSON lines
 ```
 
-Releases (tag `v<version>`) publish a ready-to-flash image; the terminal and
-NestrisLTM (for stations) update readers from there.
+Releases (tag `v<version>`) publish a factory image (new readers) and an app
+image (updates); see [docs/FLASHING.md](docs/FLASHING.md). The terminal and
+NestrisLTM (for stations) will update readers from there.

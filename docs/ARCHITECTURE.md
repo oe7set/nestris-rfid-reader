@@ -107,22 +107,29 @@ dims after 10 minutes without a card; any card restores full brightness.
 platformio.ini            envs: esp32dev (firmware), native (unit tests)
 src/
   main.cpp                setup/loop: wires the modules, fixed-rate scheduler
-  app.{h,cpp}             orchestration: presence → events, commands → actions
   core/                   pure C++ (no Arduino), built for native tests too
+    app.{h,cpp}           the behaviour: events, commands, writes, heartbeat,
+                          display state; hardware behind IRfid/IDisplay/ILink/ISystem
+    uid.h                 UID type (hex, parse)
+    settings.h            settings model (NVS keys)
     presence.{h,cpp}      card presence state machine
     card_format.{h,cpp}   block 4/5 encode/decode, CRC-16, format detection
     protocol.{h,cpp}      parse commands / build messages (ArduinoJson)
     screens.{h,cpp}       what to show (texts per state + language), no drawing
-    version.h             FW_VERSION from the build (git tag)
   hw/
     rfid_rc522.{h,cpp}    MFRC522 wrapper: WUPA/select/HLTA, read/write sector 1, health
     oled.{h,cpp}          SSD1306 drawing of a screen model, size from settings
-    settings.{h,cpp}      NVS (Preferences) load/save of the config keys
+    settings_store.{h,cpp} NVS (Preferences) load/save of the config keys
     serial_link.{h,cpp}   line reader (512 B cap) and writer
 test/
-  test_presence/ test_card_format/ test_protocol/ test_screens/   (Unity, env native)
+  test_presence/ test_card_format/ test_protocol/ test_app/   (Unity, env native;
+                          test_app runs core::App against fake hardware)
 tools/
   reader_cli.py           bench tool: show events, send commands, write a card
+  pio_version.py          FW_VERSION/FW_BUILD from git
+  pio_merge.py            `-t factory` target (factory image)
+  make_release.py         release assets + manifest + SHA256SUMS
+  native-zig/             gcc/g++ shims forwarding to zig, for native tests on Windows
 docs/                     ARCHITECTURE, PROTOCOL, CARD_FORMAT, FLASHING
 ```
 
@@ -142,11 +149,16 @@ Rules:
 
 - Version: the git tag `v<semver>`; the build embeds it (`FW_VERSION`) and
   reports it in `hello.fw`.
-- A tag builds on GitHub Actions (`.github/workflows/release.yml`):
-  - `nestris-rfid-reader-<ver>-esp32dev.bin` – **merged image** (bootloader,
-    partitions, app) to flash at offset `0x0`,
-  - `nestris-rfid-reader-<ver>-esp32dev-app.bin` – app only (`0x10000`),
-  - `manifest.json` – version, board, files, SHA-256, minimum protocol,
+- A tag builds on GitHub Actions (`.github/workflows/release.yml`,
+  assets collected by `tools/make_release.py`):
+  - `nestris-rfid-reader-<ver>-esp32dev.bin` – **factory image** (bootloader,
+    partitions, app) for offset `0x0`: new readers only, because the merged
+    file fills the gap between the partitions with `0xFF` and so **erases the
+    NVS settings** at `0x9000`;
+  - `nestris-rfid-reader-<ver>-esp32dev-app.bin` – app only for `0x10000`:
+    what updates flash (settings stay);
+  - `nestris-rfid-reader-<ver>-manifest.json` – version, board, protocol,
+    files with offsets and SHA-256;
   - `SHA256SUMS.txt` (+ signature, see the update plan).
 - Flashing over USB (no Wi-Fi by decision):
   - **terminal**: hidden menu → *Updates* → *Leser-Firmware aktualisieren*
@@ -156,8 +168,8 @@ Rules:
   - **first flash / bench**: `docs/FLASHING.md` (PlatformIO upload,
     `esptool` command line, or the terminal's CLI
     `nestris-terminal flash-reader`).
-- Settings live in NVS and survive firmware updates (the merged image does
-  not erase NVS).
+- Settings live in NVS and survive updates of the app image; flashing the
+  factory image resets them. See [FLASHING.md](FLASHING.md).
 
 The common update mechanism of all Retroverse apps (GitHub releases of
 `github.com/oe7set/<repo>`, check automatically, install on click) is
@@ -176,11 +188,15 @@ described in `../nestris-ltm/docs/UPDATES.md`.
 
 ## Phases
 
+**Status:** R1 and R2 are implemented (35 native tests pass, the firmware
+builds), the release workflow exists; **nothing has run on real hardware
+yet**. The bench checks of R1/R2 are the next step once a reader is at hand.
+
 | Phase | Content | Verification |
 |---|---|---|
-| R0 | Plan, repo, protocol and card format (this commit) | review |
+| R0 | Plan, repo, protocol and card format ✅ | review |
 | R1 | Firmware core: PlatformIO project, `core/` modules with native tests, RC522 wrapper (WUPA/HLTA presence, sector 1 read/write/verify, health), settings, serial link, `app` | `pio test -e native`; bench with a reader: place/remove, legacy and blank cards, write + verify, pull the RC522 cable, flood the serial line |
 | R2 | OLED screens 128×32/128×64, animations, burn-in protection, `tools/reader_cli.py` | photos of every screen on both displays |
 | R3 | Host drivers: terminal v2 driver + fake driver + tests; station `rfid.rs` v2 + MQTT `cmd` mapping + tests; NestrisLTM `show` best score | terminal end to end with a real reader; station replay run with a reader |
-| R4 | Release workflow (merged image, manifest, checksums), `FLASHING.md`, flashing from the terminal and the station | flash an old v1 reader to v2 from the terminal; station update via admin |
+| R4 | Release workflow (factory + app image, manifest, checksums) ✅, `FLASHING.md` ✅, flashing from the terminal and the station | flash an old v1 reader to v2 from the terminal; station update via admin |
 | R5 | Update functions of all apps (`../nestris-ltm/docs/UPDATES.md`) | update every app from one GitHub release to the next |
