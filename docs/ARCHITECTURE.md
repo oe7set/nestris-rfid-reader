@@ -188,15 +188,20 @@ described in `../nestris-ltm/docs/UPDATES.md`.
 
 ## Phases
 
-**Status:** R1 and R2 are implemented (35 native tests pass, the firmware
-builds), the release workflow exists; **nothing has run on real hardware
-yet**. The bench checks of R1/R2 are the next step once a reader is at hand.
+**Status:** R1–R3 are implemented: firmware (35 native tests, builds),
+release workflow, and the v2 drivers in the terminal (`c27d928`), the station
+(`0870d28`) and NestrisLTM's reader greeting (`c9ee974`), all tested
+against simulated readers. **Nothing has run on real hardware yet**; the
+bench checks of R1–R3 are the next step once a reader is at hand. Since R3
+the terminal and the stations refuse readers with the v1 sketch ("Leser-
+Firmware veraltet" / `rfid: outdated`): flash every reader with this
+firmware (docs/FLASHING.md, factory image) before using the new versions.
 
 | Phase | Content | Verification |
 |---|---|---|
 | R0 | Plan, repo, protocol and card format ✅ | review |
 | R1 | Firmware core: PlatformIO project, `core/` modules with native tests, RC522 wrapper (WUPA/HLTA presence, sector 1 read/write/verify, health), settings, serial link, `app` | `pio test -e native`; bench with a reader: place/remove, legacy and blank cards, write + verify, pull the RC522 cable, flood the serial line |
 | R2 | OLED screens 128×32/128×64, animations, burn-in protection, `tools/reader_cli.py` | photos of every screen on both displays |
-| R3 | Host drivers: terminal v2 driver + fake driver + tests; station `rfid.rs` v2 + MQTT `cmd` mapping + tests; NestrisLTM `show` best score | terminal end to end with a real reader; station replay run with a reader |
+| R3 | ✅ Host drivers: terminal v2 driver + fake driver + tests; station `rfid.rs` v2 + MQTT `cmd` mapping + tests; NestrisLTM `show` best score | terminal end to end with a real reader; station replay run with a reader |
 | R4 | Release workflow (factory + app image, manifest, checksums) ✅, `FLASHING.md` ✅, flashing from the terminal and the station | flash an old v1 reader to v2 from the terminal; station update via admin |
 | R5 | Update functions of all apps (`../nestris-ltm/docs/UPDATES.md`) | update every app from one GitHub release to the next |

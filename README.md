@@ -11,10 +11,11 @@ verify).
 - Card layout: [docs/CARD_FORMAT.md](docs/CARD_FORMAT.md)
 - Design, wiring and roadmap: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-> Status: firmware implemented and unit-tested (phases R1/R2), **not yet
-> tested on a real reader**. Until then the v1 sketch in
-> `../RFID_ESP/ESP32_CARD_READER` stays in use; note that v2 is not compatible
-> with the current terminal/station drivers (phase R3).
+> Status: firmware implemented and unit-tested, terminal and station speak
+> protocol v2 (phases R1–R3), **not yet tested on a real reader**. The
+> current terminal and station versions refuse readers that still run the
+> v1 sketch (`../RFID_ESP/ESP32_CARD_READER`): flash them first
+> ([docs/FLASHING.md](docs/FLASHING.md)).
 
 ## Build and flash
 
