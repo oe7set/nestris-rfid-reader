@@ -1,0 +1,7 @@
+.pio/
+.vscode/
+*.bin
+!docs/**/*.bin
+build/
+dist/
+__pycache__/
