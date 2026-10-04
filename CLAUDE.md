@@ -42,6 +42,9 @@ reader**; see the phase table in docs/ARCHITECTURE.md.
 - Code comments and docs in **English**; display texts German (default) and
   English.
 - **Commit messages never mention Claude** (no Co-Authored-By trailer).
+- License: Apache-2.0 (`LICENSE`), attribution and third-party material in `NOTICE`.
+  New third-party assets (fonts, icons, copied code) get an entry there and keep
+  their own license file next to them; LICENSE and NOTICE ship with every build.
 - `docs/PROTOCOL.md` is the contract: change it first, then the firmware and
   both host drivers (terminal and station) in the same change set, and bump
   `proto` for incompatible changes.

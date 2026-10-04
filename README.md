@@ -29,3 +29,8 @@ pio device monitor -b 115200      # watch the JSON lines
 Releases (tag `v<version>`) publish a factory image (new readers) and an app
 image (updates); see [docs/FLASHING.md](docs/FLASHING.md). The terminal and
 NestrisLTM (for stations) will update readers from there.
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Copyright 2026 Erwin Spitaler (OE7SET) – Retroverse.

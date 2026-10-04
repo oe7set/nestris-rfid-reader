@@ -1,0 +1,17 @@
+Retroverse NES Tetris Tournament Software
+Copyright 2026 Erwin Spitaler (OE7SET) – Retroverse
+
+This product was developed by Erwin Spitaler (OE7SET) for Retroverse.
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The firmware images are built with these third-party components:
+
+- Arduino core for ESP32 (LGPL-2.1) and ESP-IDF (Apache-2.0),
+  Espressif Systems: https://github.com/espressif/arduino-esp32
+- MFRC522 library, Miguel Balboa and contributors (The Unlicense):
+  https://github.com/miguelbalboa/rfid
+- Adafruit SSD1306 and Adafruit GFX libraries, Copyright (c) Adafruit
+  Industries (BSD License): https://github.com/adafruit
+- ArduinoJson, Copyright (c) Benoit Blanchon (MIT License):
+  https://arduinojson.org

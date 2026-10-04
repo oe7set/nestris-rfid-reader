@@ -57,6 +57,8 @@ def main() -> int:
         "notes": "Updates flash the 'app' file at its offset (keeps the reader's settings); "
                  "'factory' is for new readers and erases the settings.",
     }
+    for name in ("LICENSE", "NOTICE"):  # Apache-2.0: they travel with the firmware
+        shutil.copyfile(ROOT / name, DIST / name)
     manifest_path = DIST / f"nestris-rfid-reader-{version}-manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     sums = [f"{sha256(DIST / e['name'])}  {e['name']}" for e in entries]
