@@ -1,7 +1,8 @@
 # Release: push a tag "v<semver>", e.g.  git tag v1.0.0 && git push origin v1.0.0
 # Publishes the factory image (new readers), the app image (updates), the
 # manifest read by the updaters of nestris-terminal and nestris-station, and
-# SHA256SUMS.txt. Tags with "-" (v1.1.0-rc1) become pre-releases.
+# SHA256SUMS.txt with its signature (secret RELEASE_SIGNING_KEY, see
+# nestris-ltm/docs/UPDATES.md). Tags with "-" (v1.1.0-rc1) become pre-releases.
 name: Release
 
 on:
@@ -30,6 +31,12 @@ jobs:
         run: strings .pio/build/esp32dev/firmware.bin | grep -qxF "${GITHUB_REF_NAME#v}"
       - name: Collect assets
         run: python tools/make_release.py "${GITHUB_REF_NAME}"
+      - uses: astral-sh/setup-uv@v6
+      - name: Sign checksums
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: uv run --script .github/scripts/sign_release.py sign dist/SHA256SUMS.txt
+
       - uses: softprops/action-gh-release@v2
         with:
           name: nestris-rfid-reader ${{ github.ref_name }}
