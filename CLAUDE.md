@@ -34,8 +34,8 @@ without gcc: put the zig shims first on PATH for the native tests:
 `$env:PATH = "$PWD\tools\native-zig;$env:PATH"; pio test -e native`
 (zig comes from PyPI via `uvx`, nothing to install).
 
-Status: firmware and tests complete for R1/R2, but **not yet run on a real
-reader**; see the phase table in docs/ARCHITECTURE.md.
+Status: v1.0.0 runs on a real reader (bench + terminal registration tested
+2026-10-04); open hardware checks are listed in docs/ARCHITECTURE.md.
 
 ## Conventions
 

@@ -190,9 +190,13 @@ described in `../nestris-ltm/docs/UPDATES.md`.
 
 **Status:** R1–R3 are implemented: firmware (35 native tests, builds),
 release workflow, and the v2 drivers in the terminal (`c27d928`), the station
-(`0870d28`) and NestrisLTM's reader greeting (`c9ee974`), all tested
-against simulated readers. **Nothing has run on real hardware yet**; the
-bench checks of R1–R3 are the next step once a reader is at hand. Since R3
+(`0870d28`) and NestrisLTM's reader greeting (`c9ee974`).
+**Hardware test 2026-10-04** (ESP32-D0WD-V3, CH340, RC522 clone `0xB2`,
+SSD1306 128×32): boot `hello`, presence (place/remove, quick lift), v1
+`legacy` cards, `blank` card, `unsupported` (phone/bank card), OLED screens,
+and a real registration in the terminal (card written, read back, player
+page opened) all work. Not yet tested on hardware: a 128×64 display, an
+unplugged RC522, and the station (Debian) with a v2 reader. Since R3
 the terminal and the stations refuse readers with the v1 sketch ("Leser-
 Firmware veraltet" / `rfid: outdated`): flash every reader with this
 firmware (docs/FLASHING.md, factory image) before using the new versions.
