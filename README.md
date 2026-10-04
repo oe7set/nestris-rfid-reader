@@ -17,6 +17,12 @@ verify).
 > v1 sketch (`../RFID_ESP/ESP32_CARD_READER`): flash them first
 > ([docs/FLASHING.md](docs/FLASHING.md)).
 
+## Download
+
+**[Latest release](https://github.com/oe7set/nestris-rfid-reader/releases/latest)**:
+`nestris-rfid-reader-<version>-esp32dev.bin` for a new reader (flash at `0x0`),
+`...-app.bin` to update one (`0x10000`); see [docs/FLASHING.md](docs/FLASHING.md).
+
 ## Build and flash
 
 ```powershell
