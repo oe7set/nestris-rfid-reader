@@ -37,8 +37,12 @@ jobs:
           RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
         run: uv run --script .github/scripts/sign_release.py sign dist/SHA256SUMS.txt
 
+      - name: Release notes from CHANGELOG.md
+        run: uv run --script .github/scripts/release_notes.py "${GITHUB_REF_NAME}" CHANGELOG.md dist-notes/RELEASE_NOTES.md
+
       - uses: softprops/action-gh-release@v2
         with:
+          body_path: dist-notes/RELEASE_NOTES.md
           name: nestris-rfid-reader ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
