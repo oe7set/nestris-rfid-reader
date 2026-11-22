@@ -265,6 +265,39 @@ static void test_unsupported_card() {
     TEST_ASSERT_EQUAL_STRING("unsupported_card", b.link.lastOf("result")["error"]);
 }
 
+static void test_erase_makes_the_card_blank() {
+    Bench b;
+    b.place(kUidA, "Erv");
+    b.send(R"({"type":"erase","id":11,"uid":"04A1B2C3"})");
+    JsonDocument r = b.link.lastOf("result");
+    TEST_ASSERT_EQUAL_INT(11, r["id"]);
+    TEST_ASSERT_TRUE(r["ok"]);
+    TEST_ASSERT_EQUAL_STRING("04A1B2C3", r["uid"]);
+    TEST_ASSERT_TRUE(r["name"].isNull());
+    JsonDocument p = b.link.lastOf("card", "present");
+    TEST_ASSERT_EQUAL_STRING("blank", p["format"]);
+    TEST_ASSERT_TRUE(p["name"].isNull());
+    TEST_ASSERT_EQUAL_STRING("Geleert", b.display.last.lines[0].c_str());
+    TEST_ASSERT_EQUAL(CardFormat::Blank, decodeCard(b.rfid.card->b4, b.rfid.card->b5).format);
+
+    // A written card can be erased too; erase waits for a card like write.
+    b.send(R"({"type":"write","id":12,"name":"Neo"})");
+    TEST_ASSERT_EQUAL_STRING("retroverse", b.link.lastOf("card", "present")["format"]);
+    b.remove();
+    b.send(R"({"type":"erase","id":13,"timeout_ms":5000})");
+    TEST_ASSERT_TRUE(b.app.writePending());
+    b.place(kUidB, "Old");
+    TEST_ASSERT_TRUE(b.link.lastOf("result")["ok"]);
+    TEST_ASSERT_EQUAL_INT(13, b.link.lastOf("result")["id"]);
+    TEST_ASSERT_EQUAL_STRING("blank", b.link.lastOf("card", "present")["format"]);
+
+    // Not on a phone or other non-MIFARE card.
+    b.remove();
+    b.place(kUidA, nullptr, 0x20);
+    b.send(R"({"type":"erase","id":14})");
+    TEST_ASSERT_EQUAL_STRING("unsupported_card", b.link.lastOf("result")["error"]);
+}
+
 static void test_show_lines_until_card_leaves() {
     Bench b;
     b.send(R"({"type":"show","id":1,"lines":["Bestwert 1"]})");
@@ -364,6 +397,7 @@ int main() {
     RUN_TEST(test_busy_and_cancel);
     RUN_TEST(test_failed_verify_reports_and_rereads);
     RUN_TEST(test_unsupported_card);
+    RUN_TEST(test_erase_makes_the_card_blank);
     RUN_TEST(test_show_lines_until_card_leaves);
     RUN_TEST(test_config_is_applied_and_saved);
     RUN_TEST(test_no_display_attached);

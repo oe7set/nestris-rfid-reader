@@ -159,6 +159,23 @@ The display shows "Schreibe … Karte liegen lassen" meanwhile. On success the
 reader also sends a fresh `card` `present` event with the new name (same
 `uid`), so hosts that only follow `card` events stay correct.
 
+### `erase`
+
+*Firmware 1.1.0 and later; older firmware answers `unknown_type`.*
+
+Make a card new again: zero the name (block 4), the marker (block 5) and
+block 6, then verify by reading back. The card is then reported as `blank`.
+
+```json
+{"type":"erase","id":9,"uid":"04A1B2C3","timeout_ms":3000}
+```
+
+`uid` and `timeout_ms` work as for `write`; erase and write share one
+pending slot (`busy` while either is pending, `cancel` stops either). On
+success: `{"type":"result","id":9,"ok":true,"uid":"04A1B2C3","name":null}`,
+then a fresh `card` `present` event with `"format":"blank"`. The display shows
+"Geleert / Karte ist wie neu". Errors are those of `write`.
+
 ### `show`
 
 Text for the display while the current card lies on the reader, e.g. the
@@ -218,3 +235,4 @@ and sends `hello`.
 | Version | |
 |---|---|
 | 2 | first event-based protocol (this document) |
+| 2 (fw 1.1.0) | `erase` added (compatible: hosts treat `unknown_type` as "firmware too old") |

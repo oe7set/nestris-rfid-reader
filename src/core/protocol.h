@@ -19,7 +19,7 @@ constexpr size_t kMaxShowLines = 4;
 constexpr size_t kMaxShowChars = 21;
 constexpr uint32_t kDefaultWriteTimeoutMs = 15000;
 
-enum class CmdType : uint8_t { Hello, Ping, Write, Show, Cancel, Config, Reboot, Unknown, Invalid };
+enum class CmdType : uint8_t { Hello, Ping, Write, Erase, Show, Cancel, Config, Reboot, Unknown, Invalid };
 
 struct ConfigChange {
     std::optional<DisplayKind> display;
@@ -36,10 +36,10 @@ struct Command {
     // Invalid: error code (bad_json / bad_request) + detail.
     std::string error;
     std::string detail;
-    // write
+    // write (erase: no name)
     std::string name;
-    std::optional<Uid> uid;  // write, show
-    uint32_t timeoutMs = kDefaultWriteTimeoutMs;
+    std::optional<Uid> uid;  // write, erase, show
+    uint32_t timeoutMs = kDefaultWriteTimeoutMs;  // write, erase
     // show
     std::string lines[kMaxShowLines];
     size_t lineCount = 0;
@@ -77,6 +77,7 @@ std::string msgCardPresent(const CardInfo& card);
 std::string msgCardRemoved(const Uid& uid);
 std::string msgStatus(const CardInfo* card, bool readerOk, uint32_t uptimeS, bool host);
 std::string msgResultOk(std::optional<int32_t> id);
+// `name` empty = null (an erased card).
 std::string msgResultOkCard(std::optional<int32_t> id, const Uid& uid, const std::string& name);
 std::string msgResultError(std::optional<int32_t> id, const char* error, const std::string& detail = "");
 std::string msgLog(const char* level, const std::string& text);

@@ -26,6 +26,8 @@ const Text kTexts[] = {
     {"writing1", "Schreibe ...", "Writing ..."},
     {"writing2", "Karte liegen lassen", "keep the card here"},
     {"saved", "Gespeichert", "Saved"},
+    {"cleared1", "Geleert", "Cleared"},
+    {"cleared2", "Karte ist wie neu", "card is like new"},
     {"failed", "Fehler", "Error"},
     {"rfid1", "Leser-Fehler", "Reader error"},
     {"rfid2", "RFID-Modul pr\xC3\xBC" "fen", "check RFID module"},
@@ -130,8 +132,13 @@ Screen buildScreen(const View& v) {
             break;
 
         case Phase::WriteOk:
-            add(tr(l, "saved"));
-            add(v.name);
+            if (v.name.empty()) {  // erased
+                add(tr(l, "cleared1"));
+                add(tr(l, "cleared2"));
+            } else {
+                add(tr(l, "saved"));
+                add(v.name);
+            }
             s.firstBig = true;
             s.icon = Icon::Ok;
             break;

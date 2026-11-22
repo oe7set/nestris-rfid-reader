@@ -25,6 +25,14 @@ static void test_write_command() {
     c = parseCommand(R"({"type":"write","name":"Erv"})");
     TEST_ASSERT_EQUAL_UINT32(kDefaultWriteTimeoutMs, c.timeoutMs);
     TEST_ASSERT_FALSE(c.id.has_value());
+
+    // erase: like write without a name
+    c = parseCommand(R"({"type":"erase","id":8,"uid":"04a1b2c3","timeout_ms":2000})");
+    TEST_ASSERT_EQUAL(CmdType::Erase, c.type);
+    TEST_ASSERT_EQUAL_STRING("04A1B2C3", c.uid->hex().c_str());
+    TEST_ASSERT_EQUAL_UINT32(2000, c.timeoutMs);
+    TEST_ASSERT_TRUE(c.name.empty());
+    TEST_ASSERT_EQUAL(CmdType::Erase, parseCommand(R"({"type":"erase"})").type);
 }
 
 static void test_bad_requests_name_the_field() {
@@ -33,6 +41,8 @@ static void test_bad_requests_name_the_field() {
         {R"({"type":"write","id":1,"name":"way too long name"})", "name"},
         {R"({"type":"write","id":1,"name":"Erv","uid":"xyz"})", "uid"},
         {R"({"type":"write","id":1,"name":"Erv","timeout_ms":5})", "timeout_ms"},
+        {R"({"type":"erase","id":1,"uid":"xyz"})", "uid"},
+        {R"({"type":"erase","id":1,"timeout_ms":99999})", "timeout_ms"},
         {R"({"type":"show","id":1,"lines":[]})", "lines"},
         {R"({"type":"show","id":1,"lines":[1]})", "lines"},
         {R"({"type":"config","id":1,"display":"96x16"})", "display"},

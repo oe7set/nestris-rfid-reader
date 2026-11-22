@@ -132,11 +132,15 @@ Command parseCommand(const std::string& line) {
         c.type = CmdType::Cancel;
     } else if (std::strcmp(type, "reboot") == 0) {
         c.type = CmdType::Reboot;
-    } else if (std::strcmp(type, "write") == 0) {
-        c.type = CmdType::Write;
-        if (!doc["name"].is<const char*>()) return invalid(id, "bad_request", "name");
-        c.name = doc["name"].as<const char*>();
-        if (!validName(c.name)) return invalid(id, "bad_request", "name");
+    } else if (std::strcmp(type, "write") == 0 || std::strcmp(type, "erase") == 0) {
+        if (std::strcmp(type, "write") == 0) {
+            c.type = CmdType::Write;
+            if (!doc["name"].is<const char*>()) return invalid(id, "bad_request", "name");
+            c.name = doc["name"].as<const char*>();
+            if (!validName(c.name)) return invalid(id, "bad_request", "name");
+        } else {
+            c.type = CmdType::Erase;
+        }
         if (!doc["uid"].isNull()) {
             Uid uid;
             if (!doc["uid"].is<const char*>() || !Uid::parse(doc["uid"].as<const char*>(), uid)) {
@@ -268,7 +272,11 @@ std::string msgResultOkCard(std::optional<int32_t> id, const Uid& uid, const std
     putId(doc, id);
     doc["ok"] = true;
     doc["uid"] = uid.hex();
-    doc["name"] = name;
+    if (name.empty()) {
+        doc["name"] = nullptr;
+    } else {
+        doc["name"] = name;
+    }
     return dump(doc);
 }
 

@@ -1,5 +1,6 @@
 #include "core/app.h"
 
+#include <cstring>
 #include <utility>
 
 namespace core {
@@ -165,13 +166,19 @@ void App::tryWrite(uint32_t nowMs) {
 
     uint8_t b4[kBlockSize];
     uint8_t b5[kBlockSize];
-    encodeCard(w.name, b4, b5);  // the name was validated when the command arrived
+    if (w.erase) {
+        // All zeros: the card decodes as blank again, like a new one.
+        std::memset(b4, 0, kBlockSize);
+        std::memset(b5, 0, kBlockSize);
+    } else {
+        encodeCard(w.name, b4, b5);  // the name was validated when the command arrived
+    }
     const WriteStatus st = rfid_.writeBlocks(card_->uid, b4, b5);
 
     switch (st) {
         case WriteStatus::Ok: {
-            card_->name = w.name;
-            card_->format = CardFormat::Retroverse;
+            card_->name = w.name;  // empty for an erase
+            card_->format = w.erase ? CardFormat::Blank : CardFormat::Retroverse;
             link_.send(msgResultOkCard(w.id, card_->uid, w.name));
             link_.send(msgCardPresent(*card_));
             transient_ = Phase::WriteOk;
@@ -248,11 +255,13 @@ void App::handleLine(const std::string& line, uint32_t nowMs) {
             break;
 
         case CmdType::Write:
+        case CmdType::Erase:
             if (pending_) {
                 link_.send(msgResultError(cmd.id, "busy", "another write is pending"));
                 break;
             }
-            pending_ = PendingWrite{cmd.id, cmd.name, cmd.uid, nowMs + cmd.timeoutMs};
+            pending_ = PendingWrite{cmd.id, cmd.name, cmd.uid, nowMs + cmd.timeoutMs,
+                                    cmd.type == CmdType::Erase};
             transientUntilMs_ = 0;
             tryWrite(nowMs);  // the card may already be on the reader
             break;

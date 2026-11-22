@@ -88,6 +88,7 @@ private:
         std::string name;
         std::optional<Uid> uid;
         uint32_t deadlineMs;
+        bool erase = false;  // zero the name instead of writing one
         bool wrongCardSeen = false;
     };
 
